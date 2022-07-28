@@ -1,0 +1,69 @@
+# Node configuration settings
+# https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-node-configuration.html
+
+# ECK demo cluster elasticsearch
+# https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-deploy-elasticsearch.html
+
+# Index shard allocation to specific nodes
+# https://www.elastic.co/guide/en/elasticsearch/reference/current/shard-allocation-filtering.html
+
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: demo
+spec:
+  version: 8.3.2
+  auth:
+    fileRealm:
+    - secretName: es-developer
+    - secretName: es-elastic
+    roles:
+    - secretName: es-roles
+  nodeSets:
+    - name: master
+      count: 1
+      config:
+        node.roles: ["master","data"]
+      podTemplate:
+        spec:
+          containers:
+            - name: elasticsearch
+              env:
+                - name: ES_JAVA_OPTS
+                  value: "-Xms2g -Xmx2g"
+              resources:
+                requests:
+                  memory: 2Gi
+                  cpu: 1
+                limits:
+                  memory: 4Gi
+                  cpu: 3
+    - name: datax
+      count: 3
+      config:
+        node.roles: ["data","ingest"]
+        node.attr.type: "demo"
+      podTemplate:
+        spec:
+          containers:
+            - name: elasticsearch
+              env:
+                - name: ES_JAVA_OPTS
+                  value: "-Xms2g -Xmx2g"
+              resources:
+                requests:
+                  memory: 2Gi
+                  cpu: 1
+                limits:
+                  memory: 4Gi
+                  cpu: 3
+      volumeClaimTemplates:
+        # Name must be elasticsearch-data
+        - metadata:
+            name: elasticsearch-data
+          spec:
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 2Gi
