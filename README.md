@@ -1,4 +1,4 @@
-# Elastic Cluster Kubernetes(ECK)
+# Elastic Cloud on Kubernetes(ECK)
 This repository contains deployment of ECK in Kind cluster with different options.
 
 # Installation
